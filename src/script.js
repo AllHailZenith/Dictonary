@@ -2,40 +2,36 @@ const searchBtn = document.getElementById("search-button");
 const wordInput = document.getElementById("word-input");
 const resultContainer = document.getElementById("result-container");
 
-function searchWord(word) {
+async function searchWord(word) {
     resultContainer.innerHTML = "";
 
-    fetch(`https://freedictionaryapi.com/api/v1/entries/en/${word}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Word not found");
-            }
+    const response = await fetch(`https://freedictionaryapi.com/api/v1/entries/en/${word}`);
 
-            return response.json();
-        })
-        .then(data => {
-            if (data.entries.length === 0) {
-                resultContainer.textContent = "Word not found";
-                return;
-            }
+    if (!response.ok) {
+        resultContainer.textContent = "Service Down";
+        return;
+    }
 
-            const heading = document.createElement("h2");
-            heading.textContent = data.word;
-            resultContainer.appendChild(heading);
+    const data = await response.json();
 
-            const list = document.createElement("ul");
+    if (data.entries.length === 0) {
+        resultContainer.textContent = "Word not found";
+        return;
+    }
 
-            data.entries[0].senses.forEach(sense => {
-                const li = document.createElement("li");
-                li.textContent = sense.definition;
-                list.appendChild(li);
-            });
+    const heading = document.createElement("h2");
+    heading.textContent = data.word;
+    resultContainer.appendChild(heading);
 
-            resultContainer.appendChild(list);
-        })
-        .catch(error => {
-            resultContainer.textContent = "Word not found or the dictionary service is unavailable.";
-        });
+    const list = document.createElement("ul");
+
+    data.entries[0].senses.forEach(sense => {
+        const li = document.createElement("li");
+        li.textContent = sense.definition;
+        list.appendChild(li);
+    });
+
+    resultContainer.appendChild(list);
 }
 
 searchBtn.addEventListener("click", () => {
